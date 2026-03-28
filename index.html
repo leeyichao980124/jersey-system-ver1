@@ -4,102 +4,68 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>球衣登記</title>
-
 <style>
-body {
-  font-family: Arial;
-  max-width: 400px;
-  margin: auto;
-  padding: 20px;
-}
-
-input, select, button {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-}
-
-button {
-  background: #4CAF50;
-  color: white;
-  border: none;
-}
+body { font-family: Arial; max-width: 400px; margin:auto; padding:20px; }
+input, select, button { width:100%; padding:10px; margin:8px 0; }
+button { background:#4CAF50; color:white; border:none; }
 </style>
-
 </head>
-
 <body>
-
 <h2>球衣登記</h2>
 <p id="remain"></p>
-
 <form id="form">
+<select name="style" required>
+  <option value="">選擇款式</option>
+  <option value="紅">紅</option>
+  <option value="藍">藍</option>
+</select>
+
 <input name="class" placeholder="班級" required>
 <input name="name_zh" placeholder="中文姓名" required>
-<input name="name_en" placeholder="英文姓名" required>
-<input name="email" placeholder="Email（可選）">
+<input name="name_en" placeholder="英文姓名，如: 王小明 -> X. M. Wang" required>
 
 <select name="top">
-<option>S</option><option>M</option><option>L</option><option>XL</option>
+  <option>3XS</option><option>2XS</option><option>XS</option><option>S</option>
+  <option>M</option><option>L</option><option>XL</option><option>2XL</option>
+  <option>3XL</option><option>4XL</option>
 </select>
 
 <select name="pants">
-<option>S</option><option>M</option><option>L</option><option>XL</option>
+  <option>3XS</option><option>2XS</option><option>XS</option><option>S</option>
+  <option>M</option><option>L</option><option>XL</option><option>2XL</option>
+  <option>3XL</option><option>4XL</option>
 </select>
 
-<select id="number" name="number"></select>
-
+<select id="number" name="number" required></select>
 <button type="submit">送出</button>
 </form>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbzEyOYvDGTdCDXU8DfC19jjHW0MEkP8B1aRCPW6-hD1fnX4p7BfwIvfqSKTXshX2l2JaA/exec";
+const API = "https://script.google.com/macros/s/AKfycbyhk8pq9LhLxzbs4Z-Diktd3CzwgAz8KACB7zgwansD0wMjllAJRigGHw8cyRFlTfIkow/exec";
+const remainingNumbers = [2,3,4,5,6,7,8,9,10,11,14,17,19,20,21,22,24,28,30,47,49,55,66,67,69,73,77];
 
-// 取得背號
-async function loadNumbers() {
+async function loadNumbers(){
   let res = await fetch(API);
   let taken = await res.json();
-
   let select = document.getElementById("number");
-  let remain = 100 - taken.length;
-
-  document.getElementById("remain").innerText =
-    `剩餘背號：${remain}`;
-
-  for (let i = 0; i <= 99; i++) {
-    if (!taken.includes(i)) {
-      let opt = document.createElement("option");
-      opt.value = i;
-      opt.text = i;
-      select.appendChild(opt);
-    }
-  }
+  document.getElementById("remain").innerText = `剩餘背號：${taken.length}`;
+  select.innerHTML = "";
+  taken.forEach(n=>{
+    let opt = document.createElement("option");
+    opt.value = n; opt.text = n;
+    select.appendChild(opt);
+  });
 }
-
 loadNumbers();
 
-// 送出
 document.getElementById("form").addEventListener("submit", async function(e){
   e.preventDefault();
-
   let data = Object.fromEntries(new FormData(this));
-
-  let res = await fetch(API, {
-    method: "POST",
-    body: JSON.stringify(data)
-  });
-
+  let res = await fetch(API, { method:"POST", body:JSON.stringify(data) });
   let text = await res.text();
-
-  if (text === "duplicate") {
-    alert("❌ 背號已被選走！");
-  } else {
-    alert("✅ 成功！");
-  }
-
-  location.reload();
+  if(text==="duplicate"){ alert("❌ 背號已被選走！"); }
+  else{ alert("✅ 登記成功！"); location.reload(); }
 });
 </script>
-
 </body>
 </html>
