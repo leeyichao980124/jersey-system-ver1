@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>球衣登記系統</title>
+<style>
+body { font-family: Arial; max-width: 400px; margin:auto; padding:20px; }
+input, select, button { width:100%; padding:10px; margin:8px 0; }
+button { background:#4CAF50; color:white; border:none; cursor:pointer; }
+h2 { text-align:center; }
+#remain { margin-bottom:10px; font-weight:bold; }
+</style>
+</head>
+<body>
+<h2>球衣登記</h2>
+<p id="remain">載入可選背號...</p>
+
+<form id="form">
+  <!-- 款式 -->
+  <select name="style" required>
+    <option value="">選擇款式</option>
+    <option value="紅">紅</option>
+    <option value="藍">藍</option>
+  </select>
+
+  <!-- 班級 -->
+  <input name="class" placeholder="班級" required>
+
+  <!-- 中文姓名 -->
+  <input name="name_zh" placeholder="中文姓名" required>
+
+  <!-- 背號 -->
+  <select id="number" name="number" required>
+    <option value="">選擇背號</option>
+  </select>
+
+  <!-- 英文姓名 -->
+  <input name="name_en" placeholder="王小明 ➡ X.M.Wang (不用空白)" required>
+
+  <!-- 上衣尺寸 -->
+  <select name="top" required>
+    <option value="">上衣尺寸</option>
+    <option>3XS</option><option>2XS</option><option>XS</option>
+    <option>S</option><option>M</option><option>L</option>
+    <option>XL</option><option>2XL</option><option>3XL</option><option>4XL</option>
+  </select>
+
+  <!-- 褲子尺寸 -->
+  <select name="pants" required>
+    <option value="">褲子尺寸</option>
+    <option>3XS</option><option>2XS</option><option>XS</option>
+    <option>S</option><option>M</option><option>L</option>
+    <option>XL</option><option>2XL</option><option>3XL</option><option>4XL</option>
+  </select>
+
+  <button type="submit">送出</button>
+</form>
+
+<script>
+// 這裡貼上你的 Apps Script 網頁應用程式網址
+const API = "https://script.google.com/macros/s/AKfycby5V4xXPY3Clbar8Ya3Z5EngHVfxr7rs9EBAOx_XwtBqIyL1kvrmq0X9PQAW_YFpnx9vQ/exec";
+
+async function loadNumbers(){
+  try {
+    let res = await fetch(API);
+    let available = await res.json(); // 剩餘可選背號
+    let select = document.getElementById("number");
+    select.innerHTML = '<option value="">選擇背號</option>'; // 提示字
+    available.forEach(n=>{
+      let opt = document.createElement("option");
+      opt.value = n; opt.text = n;
+      select.appendChild(opt);
+    });
+    document.getElementById("remain").innerText = `可選背號：${available.join(", ")}`;
+  } catch(e){
+    console.error(e);
+    document.getElementById("remain").innerText = "無法取得背號清單";
+  }
+}
+
+// 初始載入背號
+loadNumbers();
+
+// 送出表單
+document.getElementById("form").addEventListener("submit", async function(e){
+  e.preventDefault();
+  let data = Object.fromEntries(new FormData(this));
+  try {
+    let res = await fetch(API, { method:"POST", body:JSON.stringify(data) });
+    let text = await res.text();
+    if(text==="duplicate"){ 
+      alert("❌ 背號已被選走！");
+      loadNumbers(); // 重新載入可選背號
+    }
+    else{ 
+      alert("✅ 登記成功！");
+      loadNumbers(); // 送出後刷新選單
+      this.reset();
+    }
+  } catch(err){
+    console.error(err);
+    alert("❌ 送出失敗，請稍後再試");
+  }
+});
+</script>
+</body>
+</html>
