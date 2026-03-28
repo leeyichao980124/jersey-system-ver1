@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>球衣登記</title>
+
+<style>
+body {
+  font-family: Arial;
+  max-width: 400px;
+  margin: auto;
+  padding: 20px;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+}
+
+button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>球衣登記</h2>
+<p id="remain"></p>
+
+<form id="form">
+<input name="class" placeholder="班級" required>
+<input name="name_zh" placeholder="中文姓名" required>
+<input name="name_en" placeholder="英文姓名" required>
+<input name="email" placeholder="Email（可選）">
+
+<select name="top">
+<option>S</option><option>M</option><option>L</option><option>XL</option>
+</select>
+
+<select name="pants">
+<option>S</option><option>M</option><option>L</option><option>XL</option>
+</select>
+
+<select id="number" name="number"></select>
+
+<button type="submit">送出</button>
+</form>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbzEyOYvDGTdCDXU8DfC19jjHW0MEkP8B1aRCPW6-hD1fnX4p7BfwIvfqSKTXshX2l2JaA/exec";
+
+// 取得背號
+async function loadNumbers() {
+  let res = await fetch(API);
+  let taken = await res.json();
+
+  let select = document.getElementById("number");
+  let remain = 100 - taken.length;
+
+  document.getElementById("remain").innerText =
+    `剩餘背號：${remain}`;
+
+  for (let i = 0; i <= 99; i++) {
+    if (!taken.includes(i)) {
+      let opt = document.createElement("option");
+      opt.value = i;
+      opt.text = i;
+      select.appendChild(opt);
+    }
+  }
+}
+
+loadNumbers();
+
+// 送出
+document.getElementById("form").addEventListener("submit", async function(e){
+  e.preventDefault();
+
+  let data = Object.fromEntries(new FormData(this));
+
+  let res = await fetch(API, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+
+  let text = await res.text();
+
+  if (text === "duplicate") {
+    alert("❌ 背號已被選走！");
+  } else {
+    alert("✅ 成功！");
+  }
+
+  location.reload();
+});
+</script>
+
+</body>
+</html>
